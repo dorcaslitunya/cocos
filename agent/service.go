@@ -122,6 +122,7 @@ type Service interface {
 	Attestation(ctx context.Context, reportData [quoteprovider.Nonce]byte, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error)
 	AttestationResult(ctx context.Context, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error)
 	IMAMeasurements(ctx context.Context) ([]byte, []byte, error)
+	AttestationResult(ctx context.Context, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error)
 	State() string
 }
 

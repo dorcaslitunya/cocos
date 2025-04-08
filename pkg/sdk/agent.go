@@ -29,6 +29,7 @@ type SDK interface {
 	Attestation(ctx context.Context, reportData [size64]byte, nonce [size32]byte, attType int, attestationFile *os.File) error
 	AttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationFile *os.File) error
 	IMAMeasurements(ctx context.Context, resultFile *os.File) ([]byte, error)
+	AttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationFile *os.File) error
 }
 
 const (

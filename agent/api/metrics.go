@@ -118,3 +118,12 @@ func (ms *metricsMiddleware) IMAMeasurements(ctx context.Context) ([]byte, []byt
 
 	return ms.svc.IMAMeasurements(ctx)
 }
+
+func (ms *metricsMiddleware) FetchAttestationResult(ctx context.Context, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error) {
+	defer func(begin time.Time) {
+		ms.counter.With("method", "attestation_result").Add(1)
+		ms.latency.With("method", "attestation_result").Observe(time.Since(begin).Seconds())
+	}(time.Now())
+
+	return ms.svc.AttestationResult(ctx, nonce, attType)
+}

@@ -568,6 +568,102 @@ func (x *IMAMeasurementsResponse) GetPcr10() []byte {
 	return nil
 }
 
+type FetchAttestationResultRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TokenNonce    []byte                 `protobuf:"bytes,1,opt,name=tokenNonce,proto3" json:"tokenNonce,omitempty"` // Should be less or equal 32 bytes
+	Type          int32                  `protobuf:"varint,3,opt,name=type,proto3" json:"type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AttestationResultRequest) Reset() {
+	*x = AttestationResultRequest{}
+	mi := &file_agent_agent_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AttestationResultRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AttestationResultRequest) ProtoMessage() {}
+
+func (x *AttestationResultRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AttestationResultRequest.ProtoReflect.Descriptor instead.
+func (*AttestationResultRequest) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *AttestationResultRequest) GetTokenNonce() []byte {
+	if x != nil {
+		return x.TokenNonce
+	}
+	return nil
+}
+
+func (x *AttestationResultRequest) GetType() int32 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+type AttestationResultResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	File          []byte                 `protobuf:"bytes,1,opt,name=file,proto3" json:"file,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AttestationResultResponse) Reset() {
+	*x = AttestationResultResponse{}
+	mi := &file_agent_agent_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AttestationResultResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AttestationResultResponse) ProtoMessage() {}
+
+func (x *AttestationResultResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AttestationResultResponse.ProtoReflect.Descriptor instead.
+func (*AttestationResultResponse) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *AttestationResultResponse) GetFile() []byte {
+	if x != nil {
+		return x.File
+	}
+	return nil
+}
+
 var File_agent_agent_proto protoreflect.FileDescriptor
 
 var file_agent_agent_proto_rawDesc = string([]byte{
@@ -656,6 +752,8 @@ var file_agent_agent_proto_goTypes = []any{
 	(*AttestationResultResponse)(nil), // 9: agent.AttestationResultResponse
 	(*IMAMeasurementsRequest)(nil),  // 8: agent.IMAMeasurementsRequest
 	(*IMAMeasurementsResponse)(nil), // 9: agent.IMAMeasurementsResponse
+	(*AttestationResultRequest)(nil),  // 8: agent.AttestationResultRequest
+	(*AttestationResultResponse)(nil), // 9: agent.AttestationResultResponse
 }
 var file_agent_agent_proto_depIdxs = []int32{
 	0, // 0: agent.AgentService.Algo:input_type -> agent.AlgoRequest

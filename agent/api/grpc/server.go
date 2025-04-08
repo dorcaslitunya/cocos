@@ -38,8 +38,8 @@ type grpcServer struct {
 	data              grpc.Handler
 	result            grpc.Handler
 	attestation       grpc.Handler
-	attestationResult grpc.Handler
 	imaMeasurements   grpc.Handler
+	attestationResult grpc.Handler
 	agent.UnimplementedAgentServiceServer
 }
 
@@ -75,6 +75,11 @@ func NewServer(svc agent.Service) agent.AgentServiceServer {
 			imaMeasurementsEndpoint(svc),
 			decodeIMAMeasurementsRequest,
 			encodeIMAMeasurementsResponse,
+		),
+		attestationResult: grpc.NewServer(
+			attestationResultEndpoint(svc),
+			decodeAttestationResultRequest,
+			encodeAttestationResultResponse,
 		),
 	}
 }
@@ -334,4 +339,18 @@ func (s *grpcServer) IMAMeasurements(req *agent.IMAMeasurementsRequest, stream a
 	}
 
 	return nil
+}
+
+func (s *grpcServer) FetchAttestationResult(ctx context.Context, req *agent.FetchAttestationResultRequest) (*agent.FetchAttestationResultResponse, error) {
+	_, res, err := s.attestationResult.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	rr, ok := res.(*agent.AttestationResultResponse)
+
+	if !ok {
+		return nil, status.Error(codes.Internal, "failed to cast response to FetchAttestationResultResponse")
+	}
+
+	return rr, nil
 }
