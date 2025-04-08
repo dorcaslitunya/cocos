@@ -147,6 +147,7 @@ func main() {
 	// measure.
 	rootCmd.AddCommand(cmd.NewRootCmd())
 	rootCmd.AddCommand(cliSVC.NewMeasureCmd(cfg.IgvmBinaryPath))
+	rootCmd.AddCommand(cliSVC.NewTokenCmd())
 
 	// Flags
 	keysCmd.PersistentFlags().StringVarP(
