@@ -3,7 +3,6 @@
 package cli
 
 import (
-	"context"
 	"crypto"
 	"encoding/hex"
 	"encoding/json"
@@ -14,20 +13,14 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/compute/metadata"
 	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/containerd/containerd/namespaces"
 	"github.com/fatih/color"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/go-sev-guest/abi"
 	"github.com/google/go-sev-guest/proto/check"
 	"github.com/google/go-sev-guest/proto/sevsnp"
 	"github.com/google/go-sev-guest/tools/lib/report"
 	tpmAttest "github.com/google/go-tpm-tools/proto/attest"
 	"github.com/google/go-tpm-tools/server"
-	"github.com/google/go-tpm-tools/verifier"
-	"github.com/google/go-tpm-tools/verifier/models"
-	"github.com/google/go-tpm-tools/verifier/util"
 	"github.com/google/go-tpm/legacy/tpm2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -669,120 +662,6 @@ func (cli *CLI) NewMeasureCmd(igvmBinaryPath string) *cobra.Command {
 	}
 
 	return igvmmeasureCmd
-}
-
-func (cli *CLI) NewTokenCmd() *cobra.Command {
-	tokenCmd := &cobra.Command{
-		Use:   "token <FILENAME>",
-		Short: "Fetch an OIDC token from Google Attestation Verification Service.",
-		Long: `Gather attestation report and send it to Google Attestation Verification Service for an OIDC token.
-The OIDC token includes claims regarding the GCE VM, which is verified by Attestation Verification Service. Note that Confidential Computing API needs to be enabled for your account to access Google Attestation Verification Service https://console.cloud.google.com/apis/api/confidentialcomputing.googleapis.com.
---algo flag overrides the public key algorithm for the GCE TPM attestation key. If not provided, rsa is used by default.
-`,
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			filename := args[0]
-
-			// Metadata Server (MDS). A GCP specific client.
-			mdsClient := metadata.NewClient(nil)
-
-			ctx := namespaces.WithNamespace(context.Background(), namespaces.Default)
-			asAddress := "https://confidentialcomputing.googleapis.com"
-			audience := "UVC"
-			outputFile := "attestationToken"
-
-			fmt.Printf("Attestation Address is set to %s\n", asAddress)
-
-			region, err := util.GetRegion(mdsClient)
-			if err != nil {
-				return fmt.Errorf("failed to fetch Region from MDS, the tool is probably not running in a GCE VM: %v", err)
-			}
-
-			projectID, err := mdsClient.ProjectIDWithContext(ctx)
-			if err != nil {
-				return fmt.Errorf("failed to retrieve ProjectID from MDS: %v", err)
-			}
-
-			// Connect to Google API
-			verifierClient, err := util.NewRESTClient(ctx, asAddress, projectID, region)
-			if err != nil {
-				return fmt.Errorf("failed to create REST verifier client: %v", err)
-			}
-
-			challenge, err := verifierClient.CreateChallenge(ctx)
-			if err != nil {
-				return err
-			}
-
-			principalTokens, err := util.PrincipalFetcher(challenge.Name, mdsClient)
-			if err != nil {
-				return fmt.Errorf("failed to get principal tokens: %w", err)
-			}
-
-			result, err := os.ReadFile(filename)
-			if err != nil {
-				return fmt.Errorf("error reading the file: %w", err)
-			}
-
-			var attvTPM tpmAttest.Attestation
-			err = proto.Unmarshal(result, &attvTPM)
-			if err != nil {
-				return fmt.Errorf("failed to unmarshal the attestation: %v", err)
-			}
-
-			req := verifier.VerifyAttestationRequest{
-				Challenge:      challenge,
-				GcpCredentials: principalTokens,
-				Attestation:    &attvTPM,
-				TokenOptions:   &models.TokenOptions{Audience: audience, TokenType: "OIDC"},
-			}
-
-			resp, err := verifierClient.VerifyAttestation(ctx, req)
-			if err != nil {
-				return err
-			}
-
-			if len(resp.PartialErrs) > 0 {
-				fmt.Printf("Partial errors from VerifyAttestation: %v", resp.PartialErrs)
-			}
-
-			token := resp.ClaimsToken
-
-			// Get token expiration
-			claims := &jwt.RegisteredClaims{}
-			_, _, err = jwt.NewParser().ParseUnverified(string(token), claims)
-			if err != nil {
-				return fmt.Errorf("failed to parse token: %w", err)
-			}
-
-			now := time.Now()
-			if !now.Before(claims.ExpiresAt.Time) {
-				return errors.New("token is expired")
-			}
-
-			// Print out the claims in the jwt payload
-			mapClaims := jwt.MapClaims{}
-			_, _, err = jwt.NewParser().ParseUnverified(string(token), mapClaims)
-			if err != nil {
-				return fmt.Errorf("failed to parse token: %w", err)
-			}
-			claimsString, err := json.MarshalIndent(mapClaims, "", "  ")
-			if err != nil {
-				return fmt.Errorf("failed to format claims: %w", err)
-			}
-
-			out := []byte(token)
-			if err := os.WriteFile(outputFile, out, 0644); err != nil {
-				return fmt.Errorf("failed to write the token: %v", err)
-			}
-
-			fmt.Printf("%s\nNote: these Claims are for debugging purpose and not verified\n", string(claimsString))
-
-			return nil
-		},
-	}
-
-	return tokenCmd
 }
 
 func sevsnpverify(cmd *cobra.Command, args []string) error {
