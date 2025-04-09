@@ -140,4 +140,3 @@ replace github.com/virtee/sev-snp-measure-go => github.com/sammyoina/sev-snp-mea
 
 replace github.com/google/go-tpm-tools => github.com/danko-miladinovic/go-tpm-tools v0.0.0-20250228160324-1ebcfd79567c
 
-replace github.com/edgelesssys/go-azguestattestation => github.com/danko-miladinovic/go-azguestattestation v0.0.0-20250407151636-1df5b7f2e048
