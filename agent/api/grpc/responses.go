@@ -13,3 +13,7 @@ type resultRes struct {
 type attestationRes struct {
 	File []byte
 }
+
+type fetchAttestationResultRes struct {
+	AttestationResult []byte `protobuf:"bytes,1,opt,name=AttestationResult,proto3" json:"AttestationResult,omitempty"`
+}

@@ -11,6 +11,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -27,6 +28,7 @@ type SDK interface {
 	Data(ctx context.Context, dataset *os.File, filename string, privKey any) error
 	Result(ctx context.Context, privKey any, resultFile *os.File) error
 	Attestation(ctx context.Context, reportData [size64]byte, nonce [size32]byte, attType int, attestationFile *os.File) error
+	FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int) error
 }
 
 const (
@@ -152,6 +154,25 @@ func (sdk *agentSDK) Attestation(ctx context.Context, reportData [size64]byte, n
 	pb := progressbar.New(true)
 
 	return pb.ReceiveAttestation(attestationProgressDescription, fileSize, stream, attestationFile)
+}
+
+func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int) error {
+	request := &agent.FetchAttestationResultRequest{
+		TokenNonce: nonce[:],
+		Type:       int32(attType),
+	}
+
+	result, err := sdk.client.FetchAttestationResult(ctx, request)
+	if err != nil {
+		return fmt.Errorf("failed to fetch attestation token: %w", err)
+	}
+
+	// Print token as string (assuming it's printable like a JWT or PEM)
+	token := string(result.GetAttestationResult())
+	fmt.Println("Attestation Token:")
+	fmt.Println(token)
+
+	return nil
 }
 
 func signData(userID string, privKey crypto.Signer) ([]byte, error) {

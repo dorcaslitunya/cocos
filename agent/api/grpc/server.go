@@ -25,17 +25,19 @@ const (
 )
 
 var (
-	ErrTEENonceLength  = errors.New("malformed report data, expect less or equal to 64 bytes")
-	ErrVTpmNonceLength = errors.New("malformed vTPM nonce, expect less or equal to 32 bytes")
+	ErrTEENonceLength   = errors.New("malformed report data, expect less or equal to 64 bytes")
+	ErrVTpmNonceLength  = errors.New("malformed vTPM nonce, expect less or equal to 32 bytes")
+	ErrTokenNonceLength = errors.New("malformed token nonce, expect less or equal to 32 bytes")
 )
 
 var _ agent.AgentServiceServer = (*grpcServer)(nil)
 
 type grpcServer struct {
-	algo        grpc.Handler
-	data        grpc.Handler
-	result      grpc.Handler
-	attestation grpc.Handler
+	algo              grpc.Handler
+	data              grpc.Handler
+	result            grpc.Handler
+	attestation       grpc.Handler
+	AttestationResult grpc.Handler
 	agent.UnimplementedAgentServiceServer
 }
 
@@ -59,6 +61,11 @@ func NewServer(svc agent.Service) agent.AgentServiceServer {
 		),
 		attestation: grpc.NewServer(
 			attestationEndpoint(svc),
+			decodeAttestationRequest,
+			encodeAttestationResponse,
+		),
+		AttestationResult: grpc.NewServer(
+			AttestationResultEndpoint(svc),
 			decodeAttestationRequest,
 			encodeAttestationResponse,
 		),
@@ -125,6 +132,26 @@ func encodeAttestationResponse(_ context.Context, response interface{}) (interfa
 	return &agent.AttestationResponse{
 		File: res.File,
 	}, nil
+}
+
+func encodeAttestationResultResponse(_ context.Context, response interface{}) (interface{}, error) {
+	res := response.(fetchAttestationResultRes)
+	return &agent.FetchAttestationResultResponse{
+		AttestationResult: res.AttestationResult,
+	}, nil
+}
+
+func decodeAttestationResultRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
+	req := grpcReq.(*agent.FetchAttestationResultRequest)
+	var nonce [vtpm.Nonce]byte
+
+	if len(req.TokenNonce) > vtpm.Nonce {
+		return nil, ErrVTpmNonceLength
+	}
+
+	copy(nonce[:], req.TokenNonce)
+	return FetchAttestationResultReq{tokenNonce: nonce, AttType: config.AttestationType(req.Type)}, nil
+
 }
 
 // Algo implements agent.AgentServiceServer.

@@ -113,6 +113,7 @@ type Service interface {
 	Data(ctx context.Context, dataset Dataset) error
 	Result(ctx context.Context) ([]byte, error)
 	Attestation(ctx context.Context, reportData [quoteprovider.Nonce]byte, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error)
+	FetchAttestationResult(ctx context.Context, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error)
 	State() string
 }
 
@@ -439,6 +440,13 @@ func (as *agentService) Attestation(ctx context.Context, reportData [quoteprovid
 			return []byte{}, err
 		}
 		return vTPMQuote, nil
+	default:
+		return []byte{}, ErrAttestationType
+	}
+}
+
+func (as *agentService) FetchAttestationResult(ctx context.Context, nonce [vtpm.Nonce]byte, attType config.AttestationType) ([]byte, error) {
+	switch attType {
 	case config.AzureToken:
 		token, err := as.azureToken()
 		if err != nil {

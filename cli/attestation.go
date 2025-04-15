@@ -265,52 +265,63 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				return
 			}
 
-			if err := cli.agentSDK.Attestation(cmd.Context(), fixedReportData, fixedVtpmNonceByte, int(attType), attestationFile); err != nil {
-				printError(cmd, "Failed to get attestation due to error: %v ❌ ", err)
-				return
-			}
+			if attType != config.AzureToken {
 
-			if err := attestationFile.Close(); err != nil {
-				printError(cmd, "Error closing attestation file: %v ❌ ", err)
-				return
-			}
-
-			if getTextProtoAttestation {
-				result, err := os.ReadFile(filename)
-				if err != nil {
-					printError(cmd, "Error reading attestation file: %v ❌ ", err)
+				if err := cli.agentSDK.Attestation(cmd.Context(), fixedReportData, fixedVtpmNonceByte, int(attType), attestationFile); err != nil {
+					printError(cmd, "Failed to get attestation due to error: %v ❌ ", err)
 					return
 				}
 
-				switch attestationType {
-				case SNP:
-					result, err = attesationToJSON(result)
-				case VTPM, SNPvTPM:
-					marshalOptions := prototext.MarshalOptions{
-						Multiline: true,
-						EmitASCII: true,
-					}
-					var attvTPM tpmAttest.Attestation
-					err = proto.Unmarshal(result, &attvTPM)
+				if err := attestationFile.Close(); err != nil {
+					printError(cmd, "Error closing attestation file: %v ❌ ", err)
+					return
+				}
+
+				if getTextProtoAttestation {
+					result, err := os.ReadFile(filename)
 					if err != nil {
-						printError(cmd, "failed to unmarshal the attestation report: %v ❌ ", ErrBadAttestation)
+						printError(cmd, "Error reading attestation file: %v ❌ ", err)
+						return
 					}
 
-					result = []byte(marshalOptions.Format(&attvTPM))
+					switch attestationType {
+					case SNP:
+						result, err = attesationToJSON(result)
+					case VTPM, SNPvTPM:
+						marshalOptions := prototext.MarshalOptions{
+							Multiline: true,
+							EmitASCII: true,
+						}
+						var attvTPM tpmAttest.Attestation
+						err = proto.Unmarshal(result, &attvTPM)
+						if err != nil {
+							printError(cmd, "failed to unmarshal the attestation report: %v ❌ ", ErrBadAttestation)
+						}
+
+						result = []byte(marshalOptions.Format(&attvTPM))
+					}
+
+					if err != nil {
+						printError(cmd, "Error converting attestation to textproto: %v ❌ ", err)
+						return
+					}
+
+					if err := os.WriteFile(filename, result, 0o644); err != nil {
+						printError(cmd, "Error writing attestation file: %v ❌ ", err)
+						return
+					}
 				}
 
-				if err != nil {
-					printError(cmd, "Error converting attestation to textproto: %v ❌ ", err)
-					return
-				}
+				cmd.Println("Attestation result retrieved and saved successfully!")
 
-				if err := os.WriteFile(filename, result, 0o644); err != nil {
-					printError(cmd, "Error writing attestation file: %v ❌ ", err)
+			} else if attType == config.AzureToken {
+				if err := cli.agentSDK.FetchAttestationResult(cmd.Context(), fixedVtpmNonceByte, int(attType)); err != nil {
+					printError(cmd, "Failed to get attestation result due to error: %v ❌ ", err)
 					return
 				}
+				cmd.Println("Azure Attestation result retrieved and saved successfully!")
 			}
 
-			cmd.Println("Attestation result retrieved and saved successfully!")
 		},
 	}
 

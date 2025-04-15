@@ -26,7 +26,9 @@ require (
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.6.0
 	cloud.google.com/go/storage v1.51.0
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/golang/protobuf v1.5.4
 	github.com/google/gce-tcb-verifier v0.3.1
 )
@@ -36,7 +38,6 @@ require (
 	cloud.google.com/go v0.118.3 // indirect
 	cloud.google.com/go/auth v0.15.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.7 // indirect
-	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/confidentialcomputing v1.8.0 // indirect
 	cloud.google.com/go/iam v1.4.1 // indirect
 	cloud.google.com/go/monitoring v1.24.0 // indirect
@@ -59,7 +60,6 @@ require (
 	github.com/gofrs/uuid/v5 v5.3.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/google/certificate-transparency-go v1.1.8 // indirect
 	github.com/google/go-attestation v0.5.1 // indirect
 	github.com/google/go-eventlog v0.0.2-0.20241003021507-01bb555f7cba // indirect
@@ -139,4 +139,3 @@ require (
 replace github.com/virtee/sev-snp-measure-go => github.com/sammyoina/sev-snp-measure-go v0.0.0-20241202151803-ef189f0ff825
 
 replace github.com/google/go-tpm-tools => github.com/danko-miladinovic/go-tpm-tools v0.0.0-20250228160324-1ebcfd79567c
-
