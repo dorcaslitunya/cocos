@@ -46,8 +46,10 @@ var (
 	ErrNoHashAlgo = errors.New("hash algo is not supported")
 )
 
-type VtpmAttest func(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, error)
-type AzureAttestFunc func() ([]byte, error)
+type (
+	VtpmAttest      func(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, error)
+	AzureAttestFunc func() ([]byte, error)
+)
 
 type tpmWrapper struct {
 	io.ReadWriteCloser

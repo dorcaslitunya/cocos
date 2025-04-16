@@ -66,8 +66,8 @@ func NewServer(svc agent.Service) agent.AgentServiceServer {
 		),
 		AttestationResult: grpc.NewServer(
 			AttestationResultEndpoint(svc),
-			decodeAttestationRequest,
-			encodeAttestationResponse,
+			decodeAttestationResultRequest,
+			encodeAttestationResultResponse,
 		),
 	}
 }
@@ -151,7 +151,6 @@ func decodeAttestationResultRequest(_ context.Context, grpcReq interface{}) (int
 
 	copy(nonce[:], req.TokenNonce)
 	return FetchAttestationResultReq{tokenNonce: nonce, AttType: config.AttestationType(req.Type)}, nil
-
 }
 
 // Algo implements agent.AgentServiceServer.

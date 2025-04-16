@@ -9,10 +9,6 @@ on:
       - "pkg/manager/*.pb.go"
       - "agent/agent.proto"
       - "agent/*.pb.go"
-      - "agent/events/events.proto"
-      - "agent/events/*.pb.go"
-      - "agent/cvms/cvms.proto"
-      - "agent/cvms/*.pb.go"
 
   pull_request:
     branches:
@@ -22,10 +18,6 @@ on:
       - "pkg/manager/*.pb.go"
       - "agent/agent.proto"
       - "agent/*.pb.go"
-      - "agent/events/events.proto"
-      - "agent/events/*.pb.go"
-      - "agent/cvms/cvms.proto"
-      - "agent/cvms/*.pb.go"
 
 jobs:
   checkproto:

@@ -266,7 +266,6 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 			}
 
 			if attType != config.AzureToken {
-
 				if err := cli.agentSDK.Attestation(cmd.Context(), fixedReportData, fixedVtpmNonceByte, int(attType), attestationFile); err != nil {
 					printError(cmd, "Failed to get attestation due to error: %v ❌ ", err)
 					return
@@ -313,7 +312,6 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				}
 
 				cmd.Println("Attestation result retrieved and saved successfully!")
-
 			} else if attType == config.AzureToken {
 				if err := cli.agentSDK.FetchAttestationResult(cmd.Context(), fixedVtpmNonceByte, int(attType)); err != nil {
 					printError(cmd, "Failed to get attestation result due to error: %v ❌ ", err)
@@ -321,7 +319,6 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				}
 				cmd.Println("Azure Attestation result retrieved and saved successfully!")
 			}
-
 		},
 	}
 
