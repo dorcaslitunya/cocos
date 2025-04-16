@@ -37,7 +37,7 @@ type grpcServer struct {
 	data              grpc.Handler
 	result            grpc.Handler
 	attestation       grpc.Handler
-	AttestationResult grpc.Handler
+	attestationResult grpc.Handler
 	agent.UnimplementedAgentServiceServer
 }
 
@@ -64,8 +64,8 @@ func NewServer(svc agent.Service) agent.AgentServiceServer {
 			decodeAttestationRequest,
 			encodeAttestationResponse,
 		),
-		AttestationResult: grpc.NewServer(
-			AttestationResultEndpoint(svc),
+		attestationResult: grpc.NewServer(
+			attestationResultEndpoint(svc),
 			decodeAttestationResultRequest,
 			encodeAttestationResultResponse,
 		),
@@ -137,7 +137,7 @@ func encodeAttestationResponse(_ context.Context, response interface{}) (interfa
 func encodeAttestationResultResponse(_ context.Context, response interface{}) (interface{}, error) {
 	res := response.(fetchAttestationResultRes)
 	return &agent.FetchAttestationResultResponse{
-		AttestationResult: res.AttestationResult,
+		File: res.File,
 	}, nil
 }
 
@@ -260,4 +260,18 @@ func (s *grpcServer) Attestation(req *agent.AttestationRequest, stream agent.Age
 	}
 
 	return nil
+}
+
+func (s *grpcServer) FetchAttestationResult(ctx context.Context, req *agent.FetchAttestationResultRequest) (*agent.FetchAttestationResultResponse, error) {
+	_, res, err := s.attestationResult.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	rr, ok := res.(*agent.FetchAttestationResultResponse)
+
+	if !ok {
+		return nil, status.Error(codes.Internal, "failed to cast response to FetchAttestationResultResponse")
+	}
+
+	return rr, nil
 }

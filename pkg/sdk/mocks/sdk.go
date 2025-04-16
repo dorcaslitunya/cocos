@@ -173,17 +173,17 @@ func (_c *SDK_Data_Call) RunAndReturn(run func(context.Context, *os.File, string
 	return _c
 }
 
-// FetchAttestationResult provides a mock function with given fields: ctx, nonce, attType
-func (_m *SDK) FetchAttestationResult(ctx context.Context, nonce [32]byte, attType int) error {
-	ret := _m.Called(ctx, nonce, attType)
+// FetchAttestationResult provides a mock function with given fields: ctx, nonce, attType, attestationFile
+func (_m *SDK) FetchAttestationResult(ctx context.Context, nonce [32]byte, attType int, attestationFile *os.File) error {
+	ret := _m.Called(ctx, nonce, attType, attestationFile)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FetchAttestationResult")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, [32]byte, int) error); ok {
-		r0 = rf(ctx, nonce, attType)
+	if rf, ok := ret.Get(0).(func(context.Context, [32]byte, int, *os.File) error); ok {
+		r0 = rf(ctx, nonce, attType, attestationFile)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -200,13 +200,14 @@ type SDK_FetchAttestationResult_Call struct {
 //   - ctx context.Context
 //   - nonce [32]byte
 //   - attType int
-func (_e *SDK_Expecter) FetchAttestationResult(ctx interface{}, nonce interface{}, attType interface{}) *SDK_FetchAttestationResult_Call {
-	return &SDK_FetchAttestationResult_Call{Call: _e.mock.On("FetchAttestationResult", ctx, nonce, attType)}
+//   - attestationFile *os.File
+func (_e *SDK_Expecter) FetchAttestationResult(ctx interface{}, nonce interface{}, attType interface{}, attestationFile interface{}) *SDK_FetchAttestationResult_Call {
+	return &SDK_FetchAttestationResult_Call{Call: _e.mock.On("FetchAttestationResult", ctx, nonce, attType, attestationFile)}
 }
 
-func (_c *SDK_FetchAttestationResult_Call) Run(run func(ctx context.Context, nonce [32]byte, attType int)) *SDK_FetchAttestationResult_Call {
+func (_c *SDK_FetchAttestationResult_Call) Run(run func(ctx context.Context, nonce [32]byte, attType int, attestationFile *os.File)) *SDK_FetchAttestationResult_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].([32]byte), args[2].(int))
+		run(args[0].(context.Context), args[1].([32]byte), args[2].(int), args[3].(*os.File))
 	})
 	return _c
 }
@@ -216,7 +217,7 @@ func (_c *SDK_FetchAttestationResult_Call) Return(_a0 error) *SDK_FetchAttestati
 	return _c
 }
 
-func (_c *SDK_FetchAttestationResult_Call) RunAndReturn(run func(context.Context, [32]byte, int) error) *SDK_FetchAttestationResult_Call {
+func (_c *SDK_FetchAttestationResult_Call) RunAndReturn(run func(context.Context, [32]byte, int, *os.File) error) *SDK_FetchAttestationResult_Call {
 	_c.Call.Return(run)
 	return _c
 }

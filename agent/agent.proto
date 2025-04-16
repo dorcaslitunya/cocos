@@ -51,5 +51,5 @@ message FetchAttestationResultRequest{
   int32 type = 3;
 }
 message FetchAttestationResultResponse{
-  bytes AttestationResult = 1;
+  bytes file = 1;
 }

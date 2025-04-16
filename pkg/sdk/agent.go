@@ -28,7 +28,7 @@ type SDK interface {
 	Data(ctx context.Context, dataset *os.File, filename string, privKey any) error
 	Result(ctx context.Context, privKey any, resultFile *os.File) error
 	Attestation(ctx context.Context, reportData [size64]byte, nonce [size32]byte, attType int, attestationFile *os.File) error
-	FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int) error
+	FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationFile *os.File) error
 }
 
 const (
@@ -156,7 +156,7 @@ func (sdk *agentSDK) Attestation(ctx context.Context, reportData [size64]byte, n
 	return pb.ReceiveAttestation(attestationProgressDescription, fileSize, stream, attestationFile)
 }
 
-func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int) error {
+func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationResultFile *os.File) error {
 	request := &agent.FetchAttestationResultRequest{
 		TokenNonce: nonce[:],
 		Type:       int32(attType),
@@ -167,10 +167,10 @@ func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]b
 		return fmt.Errorf("failed to fetch attestation token: %w", err)
 	}
 
-	// Print token as string (assuming it's printable like a JWT or PEM)
-	token := string(result.GetAttestationResult())
-	fmt.Println("Attestation Token:")
-	fmt.Println(token)
+	_, err = attestationResultFile.Write(result.GetFile())
+	if err != nil {
+		return fmt.Errorf("failed to write attestation result to file: %w", err)
+	}
 
 	return nil
 }

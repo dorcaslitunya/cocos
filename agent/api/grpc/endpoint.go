@@ -80,16 +80,16 @@ func attestationEndpoint(svc agent.Service) endpoint.Endpoint {
 	}
 }
 
-func AttestationResultEndpoint(svc agent.Service) endpoint.Endpoint {
+func attestationResultEndpoint(svc agent.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FetchAttestationResultReq)
 		if err := req.validate(); err != nil {
 			return fetchAttestationResultRes{}, err
 		}
-		token, err := svc.FetchAttestationResult(ctx, req.tokenNonce, config.AttestationType(req.AttType))
+		file, err := svc.FetchAttestationResult(ctx, req.tokenNonce, config.AttestationType(req.AttType))
 		if err != nil {
 			return fetchAttestationResultRes{}, err
 		}
-		return fetchAttestationResultRes{AttestationResult: token}, nil
+		return fetchAttestationResultRes{File: file}, nil
 	}
 }
