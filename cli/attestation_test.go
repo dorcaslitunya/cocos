@@ -148,7 +148,7 @@ func TestNewGetAttestationCmd(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Cleanup(func() {
 				os.Remove(attestationFilePath)
-				os.Remove(attestationJson)
+				os.Remove(attestationReportJson)
 			})
 			mockSDK := new(mocks.SDK)
 			cli := &CLI{agentSDK: mockSDK}
