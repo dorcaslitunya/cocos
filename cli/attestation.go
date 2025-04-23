@@ -4,6 +4,7 @@ package cli
 
 import (
 	"crypto"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -34,29 +35,31 @@ import (
 )
 
 const (
-	defaultMinimumTcb       = 0
-	defaultMinimumLaunchTcb = 0
-	defaultMinimumGuestSvn  = 0
-	defaultGuestPolicy      = 0x0000000000030000
-	defaultMinimumBuild     = 0
-	defaultCheckCrl         = false
-	defaultTimeout          = 2 * time.Minute
-	defaultMaxRetryDelay    = 30 * time.Second
-	defaultRequireAuthor    = false
-	defaultRequireIdBlock   = false
-	defaultMinVersion       = "0.0"
-	size16                  = 16
-	size32                  = 32
-	size48                  = 48
-	size64                  = 64
-	attestationFilePath     = "attestation.bin"
-	vtpmFilePath            = "../quote.dat"
-	attestationJson         = "attestation.json"
-	sevProductNameMilan     = "Milan"
-	sevProductNameGenoa     = "Genoa"
-	FormatBinaryPB          = "binarypb"
-	FormatTextProto         = "textproto"
-	exampleJSONConfig       = `
+	defaultMinimumTcb           = 0
+	defaultMinimumLaunchTcb     = 0
+	defaultMinimumGuestSvn      = 0
+	defaultGuestPolicy          = 0x0000000000030000
+	defaultMinimumBuild         = 0
+	defaultCheckCrl             = false
+	defaultTimeout              = 2 * time.Minute
+	defaultMaxRetryDelay        = 30 * time.Second
+	defaultRequireAuthor        = false
+	defaultRequireIdBlock       = false
+	defaultMinVersion           = "0.0"
+	size16                      = 16
+	size32                      = 32
+	size48                      = 48
+	size64                      = 64
+	attestationFilePath         = "attestation.bin"
+	azureAttestatResultFilePath = "azure_attest_result.json"
+	azureAttestatTokenFilePath  = "azure_attest_token.jwt"
+	vtpmFilePath                = "../quote.dat"
+	attestationReportJson       = "attestation.json"
+	sevProductNameMilan         = "Milan"
+	sevProductNameGenoa         = "Genoa"
+	FormatBinaryPB              = "binarypb"
+	FormatTextProto             = "textproto"
+	exampleJSONConfig           = `
 	{
 		"rootOfTrust":{
 		   "product":"test_product",
@@ -116,31 +119,32 @@ const (
 )
 
 var (
-	mode                    string
-	cfg                     = check.Config{Policy: &check.Policy{}, RootOfTrust: &check.RootOfTrust{}}
-	cfgString               string
-	timeout                 time.Duration
-	maxRetryDelay           time.Duration
-	platformInfo            string
-	stepping                string
-	trustedAuthorKeys       []string
-	trustedAuthorHashes     []string
-	trustedIdKeys           []string
-	trustedIdKeyHashes      []string
-	attestationFile         string
-	tpmAttestationFile      string
-	attestation             []byte
-	empty16                 = [size16]byte{}
-	empty32                 = [size32]byte{}
-	empty64                 = [size64]byte{}
-	defaultReportIdMa       = []byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
-	errReportSize           = errors.New("attestation contents too small")
-	ErrBadAttestation       = errors.New("attestation file is corrupted or in wrong format")
-	output                  string
-	nonce                   []byte
-	format                  string
-	teeNonce                []byte
-	getTextProtoAttestation bool
+	mode                          string
+	cfg                           = check.Config{Policy: &check.Policy{}, RootOfTrust: &check.RootOfTrust{}}
+	cfgString                     string
+	timeout                       time.Duration
+	maxRetryDelay                 time.Duration
+	platformInfo                  string
+	stepping                      string
+	trustedAuthorKeys             []string
+	trustedAuthorHashes           []string
+	trustedIdKeys                 []string
+	trustedIdKeyHashes            []string
+	attestationFile               string
+	tpmAttestationFile            string
+	attestation                   []byte
+	empty16                       = [size16]byte{}
+	empty32                       = [size32]byte{}
+	empty64                       = [size64]byte{}
+	defaultReportIdMa             = []byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
+	errReportSize                 = errors.New("attestation contents too small")
+	ErrBadAttestation             = errors.New("attestation file is corrupted or in wrong format")
+	output                        string
+	nonce                         []byte
+	format                        string
+	teeNonce                      []byte
+	getTextProtoAttestationReport bool
+	getTextProtoAttestationResult bool
 )
 
 var errEmptyFile = errors.New("input file is empty")
@@ -255,8 +259,15 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 			}
 
 			filename := attestationFilePath
-			if getTextProtoAttestation {
-				filename = attestationJson
+
+			if attType != config.AzureToken {
+				filename = azureAttestatTokenFilePath
+			}
+
+			if getTextProtoAttestationReport {
+				filename = attestationReportJson
+			} else if getTextProtoAttestationResult {
+				filename = azureAttestatResultFilePath
 			}
 
 			attestationFile, err := os.Create(filename)
@@ -282,7 +293,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				return
 			}
 
-			if getTextProtoAttestation {
+			if getTextProtoAttestationReport || getTextProtoAttestationResult {
 				result, err := os.ReadFile(filename)
 				if err != nil {
 					printError(cmd, "Error reading attestation file: %v ❌ ", err)
@@ -304,6 +315,8 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 					}
 
 					result = []byte(marshalOptions.Format(&attvTPM))
+				case AzureToken:
+					result, err = decodeJWTToJSON(result)
 				}
 
 				if err != nil {
@@ -321,9 +334,10 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&getTextProtoAttestation, "textproto", "p", false, "Get attestation in textproto format")
-	cmd.Flags().BytesHexVarP(&teeNonce, "tee", "e", []byte{}, "Define the nonce for the SNP attestation report (must be used with attestation type snp and snp-vtpm)")
-	cmd.Flags().BytesHexVarP(&nonce, "vtpm", "t", []byte{}, "Define the nonce for the vTPM attestation report (must be used with attestation type vtpm and snp-vtpm)")
+	cmd.Flags().BoolVarP(&getTextProtoAttestationResult, "tokentextproto", "t", false, "Get azure attestation result in textproto format")
+	cmd.Flags().BoolVarP(&getTextProtoAttestationReport, "reporttextproto", "r", false, "Get attestation report in textproto format")
+	cmd.Flags().BytesHexVar(&teeNonce, "tee", []byte{}, "Define the nonce for the SNP attestation report (must be used with attestation type snp and snp-vtpm)")
+	cmd.Flags().BytesHexVar(&nonce, "vtpm", []byte{}, "Define the nonce for the vTPM attestation report (must be used with attestation type vtpm and snp-vtpm)")
 
 	return cmd
 }
@@ -1061,4 +1075,48 @@ func validateFieldLength(fieldName string, field []byte, expectedLength int) err
 		return fmt.Errorf("%s length should be at least %d bytes long", fieldName, expectedLength)
 	}
 	return nil
+}
+
+func decodeJWTToJSON(tokenBytes []byte) ([]byte, error) {
+	token := string(tokenBytes) // convert to string
+	parts := strings.Split(token, ".")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("invalid JWT: must have at least 2 parts")
+	}
+
+	decode := func(seg string) (map[string]interface{}, error) {
+		// Add padding if missing
+		if m := len(seg) % 4; m != 0 {
+			seg += strings.Repeat("=", 4-m)
+		}
+
+		data, err := base64.URLEncoding.DecodeString(seg)
+		if err != nil {
+			return nil, err
+		}
+
+		var result map[string]interface{}
+		if err := json.Unmarshal(data, &result); err != nil {
+			return nil, err
+		}
+
+		return result, nil
+	}
+
+	header, err := decode(parts[0])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode header: %v", err)
+	}
+
+	payload, err := decode(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode payload: %v", err)
+	}
+
+	combined := map[string]interface{}{
+		"header":  header,
+		"payload": payload,
+	}
+
+	return json.MarshalIndent(combined, "", "  ")
 }
