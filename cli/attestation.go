@@ -260,7 +260,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 
 			filename := attestationFilePath
 
-			if attType != config.AzureToken {
+			if attType == config.AzureToken {
 				filename = azureAttestatTokenFilePath
 			}
 
