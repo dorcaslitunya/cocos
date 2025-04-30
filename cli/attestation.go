@@ -143,6 +143,7 @@ var (
 	nonce                         []byte
 	format                        string
 	teeNonce                      []byte
+	tokenNonce                    []byte
 	getTextProtoAttestationReport bool
 	getTextProtoAttestationResult bool
 )
@@ -194,7 +195,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 		get %s --tee <512 bit hex value>
 		get %s --vtpm <256 bit hex value>
 		get %s --tee <512 bit hex value> --vtpm <256 bit hex value>
-		get %s`, SNP, VTPM, SNPvTPM, AzureToken),
+		get %s --token <256 bit hex value>`, SNP, VTPM, SNPvTPM, AzureToken),
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			if cli.connectErr != nil {
@@ -236,8 +237,14 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				return
 			}
 
+			if (attType == config.AzureToken) && len(tokenNonce) == 0 {
+				msg := color.New(color.FgRed).Sprint("Token nonce must be defined for Azure attestation ❌ ")
+				cmd.Println(msg)
+				return
+			}
+
 			var fixedReportData [quoteprovider.Nonce]byte
-			if attType != config.VTPM {
+			if attType == config.SNP || attType == config.SNPvTPM {
 				if len(teeNonce) > quoteprovider.Nonce {
 					msg := color.New(color.FgRed).Sprintf("nonce must be a hex encoded string of length lesser or equal %d bytes ❌ ", quoteprovider.Nonce)
 					cmd.Println(msg)
@@ -249,13 +256,16 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 
 			var fixedVtpmNonceByte [vtpm.Nonce]byte
 			if attType != config.SNP {
-				if len(nonce) > vtpm.Nonce {
+				if (len(nonce) > vtpm.Nonce) || (len(tokenNonce) > vtpm.Nonce) {
 					msg := color.New(color.FgRed).Sprintf("vTPM nonce must be a hex encoded string of length lesser or equal %d bytes ❌ ", vtpm.Nonce)
 					cmd.Println(msg)
 					return
 				}
-
-				copy(fixedVtpmNonceByte[:], nonce)
+				if attType == config.AzureToken {
+					copy(fixedVtpmNonceByte[:], tokenNonce)
+				} else {
+					copy(fixedVtpmNonceByte[:], nonce)
+				}
 			}
 
 			filename := attestationFilePath
@@ -338,6 +348,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&getTextProtoAttestationReport, "reporttextproto", "r", false, "Get attestation report in textproto format")
 	cmd.Flags().BytesHexVar(&teeNonce, "tee", []byte{}, "Define the nonce for the SNP attestation report (must be used with attestation type snp and snp-vtpm)")
 	cmd.Flags().BytesHexVar(&nonce, "vtpm", []byte{}, "Define the nonce for the vTPM attestation report (must be used with attestation type vtpm and snp-vtpm)")
+	cmd.Flags().BytesHexVar(&tokenNonce, "token", []byte{}, "Define the nonce for the Azure attestation token (must be used with attestation type azure-token)")
 
 	return cmd
 }

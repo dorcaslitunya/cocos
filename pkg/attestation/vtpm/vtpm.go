@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"crypto"
-	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/x509"
@@ -48,7 +47,7 @@ var (
 
 type (
 	VtpmAttest      func(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, error)
-	AzureAttestFunc func() ([]byte, error)
+	AzureAttestFunc func(tokenNonce []byte) ([]byte, error)
 )
 
 type tpmWrapper struct {
@@ -111,24 +110,18 @@ func Attest(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, erro
 	return marshalQuote(attestation)
 }
 
-func FetchAzureAttestation() ([]byte, error) {
+func FetchAzureAttestation(tokenNonce []byte) ([]byte, error) {
 	const maaURL = "https://sharedeus.eus.attest.azure.net"
 
 	fmt.Println("Hello, fetching attestation report.")
 
-	nonce, err := generateNonce()
-	if err != nil {
-		return nil, fmt.Errorf("generate nonce: %w", err)
-	}
-
-	fmt.Printf("Nonce: %s\n", hex.EncodeToString(nonce))
 	fmt.Printf("\nTesting Attest from go-azure\n\n")
 
 	maa.OSBuild = "UVC"
 	maa.OSType = "Linux"
 	maa.OSDistro = "UVC"
 
-	token, err := maa.Attest(context.Background(), nonce, maaURL, http.DefaultClient)
+	token, err := maa.Attest(context.Background(), tokenNonce, maaURL, http.DefaultClient)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching azure token: %w", err)
 	}
@@ -136,15 +129,6 @@ func FetchAzureAttestation() ([]byte, error) {
 	fmt.Printf("Token: %s\n", token)
 
 	return []byte(token), nil
-}
-
-func generateNonce() ([]byte, error) {
-	nonce := make([]byte, 16)
-	_, err := rand.Read(nonce)
-	if err != nil {
-		return nil, err
-	}
-	return nonce, nil
 }
 
 func FetchATLSQuote(pubKey, teeNonce, vTPMNonce []byte) ([]byte, error) {
@@ -210,6 +194,10 @@ func VTPMVerify(quote []byte, pubKeyTLS []byte, teeNonce []byte, vtpmNonce []byt
 
 // EmptyAttest is a dummy attestation function that returns an empty attestation report.
 func EmptyAttest(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, error) {
+	return []byte{}, nil
+}
+
+func EmptyAzureToken(tokenNonce []byte) ([]byte, error) {
 	return []byte{}, nil
 }
 
