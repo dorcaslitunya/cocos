@@ -262,7 +262,7 @@ func (s *grpcServer) Attestation(req *agent.AttestationRequest, stream agent.Age
 	return nil
 }
 
-func (s *grpcServer) FetchAttestationResult(ctx context.Context, req *agent.AttestationResultRequest) (*agent.AttestationResultResponse, error) {
+func (s *grpcServer) AttestationResult(ctx context.Context, req *agent.AttestationResultRequest) (*agent.AttestationResultResponse, error) {
 	_, res, err := s.attestationResult.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
