@@ -112,7 +112,6 @@ func Attest(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, erro
 }
 
 func FetchAzureAttestation(tokenNonce []byte) ([]byte, error) {
-
 	fmt.Println("Hello, fetching attestation report.")
 
 	fmt.Printf("\nTesting Attest from go-azure\n\n")
