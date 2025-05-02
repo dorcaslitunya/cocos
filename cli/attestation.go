@@ -35,31 +35,31 @@ import (
 )
 
 const (
-	defaultMinimumTcb           = 0
-	defaultMinimumLaunchTcb     = 0
-	defaultMinimumGuestSvn      = 0
-	defaultGuestPolicy          = 0x0000000000030000
-	defaultMinimumBuild         = 0
-	defaultCheckCrl             = false
-	defaultTimeout              = 2 * time.Minute
-	defaultMaxRetryDelay        = 30 * time.Second
-	defaultRequireAuthor        = false
-	defaultRequireIdBlock       = false
-	defaultMinVersion           = "0.0"
-	size16                      = 16
-	size32                      = 32
-	size48                      = 48
-	size64                      = 64
-	attestationFilePath         = "attestation.bin"
-	azureAttestatResultFilePath = "azure_attest_result.json"
-	azureAttestatTokenFilePath  = "azure_attest_token.jwt"
-	vtpmFilePath                = "../quote.dat"
-	attestationReportJson       = "attestation.json"
-	sevProductNameMilan         = "Milan"
-	sevProductNameGenoa         = "Genoa"
-	FormatBinaryPB              = "binarypb"
-	FormatTextProto             = "textproto"
-	exampleJSONConfig           = `
+	defaultMinimumTcb         = 0
+	defaultMinimumLaunchTcb   = 0
+	defaultMinimumGuestSvn    = 0
+	defaultGuestPolicy        = 0x0000000000030000
+	defaultMinimumBuild       = 0
+	defaultCheckCrl           = false
+	defaultTimeout            = 2 * time.Minute
+	defaultMaxRetryDelay      = 30 * time.Second
+	defaultRequireAuthor      = false
+	defaultRequireIdBlock     = false
+	defaultMinVersion         = "0.0"
+	size16                    = 16
+	size32                    = 32
+	size48                    = 48
+	size64                    = 64
+	attestationFilePath       = "attestation.bin"
+	azureAttestResultFilePath = "azure_attest_result.json"
+	azureAttestTokenFilePath  = "azure_attest_token.jwt"
+	vtpmFilePath              = "../quote.dat"
+	attestationReportJson     = "attestation.json"
+	sevProductNameMilan       = "Milan"
+	sevProductNameGenoa       = "Genoa"
+	FormatBinaryPB            = "binarypb"
+	FormatTextProto           = "textproto"
+	exampleJSONConfig         = `
 	{
 		"rootOfTrust":{
 		   "product":"test_product",
@@ -145,7 +145,7 @@ var (
 	teeNonce                      []byte
 	tokenNonce                    []byte
 	getTextProtoAttestationReport bool
-	getTextProtoAttestationResult bool
+	getAzureTokenJWT              bool
 )
 
 var errEmptyFile = errors.New("input file is empty")
@@ -271,13 +271,13 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 			filename := attestationFilePath
 
 			if attType == config.AzureToken {
-				filename = azureAttestatTokenFilePath
+				filename = azureAttestResultFilePath
 			}
 
 			if getTextProtoAttestationReport {
 				filename = attestationReportJson
-			} else if getTextProtoAttestationResult {
-				filename = azureAttestatResultFilePath
+			} else if getAzureTokenJWT {
+				filename = azureAttestTokenFilePath
 			}
 
 			attestationFile, err := os.Create(filename)
@@ -303,7 +303,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				return
 			}
 
-			if getTextProtoAttestationReport || getTextProtoAttestationResult {
+			if getTextProtoAttestationReport || !getAzureTokenJWT {
 				result, err := os.ReadFile(filename)
 				if err != nil {
 					printError(cmd, "Error reading attestation file: %v ❌ ", err)
@@ -344,7 +344,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&getTextProtoAttestationResult, "tokentextproto", "t", false, "Get azure attestation result in textproto format")
+	cmd.Flags().BoolVarP(&getAzureTokenJWT, "azurejwt", "t", false, "Get azure attestation token as jwt format")
 	cmd.Flags().BoolVarP(&getTextProtoAttestationReport, "reporttextproto", "r", false, "Get attestation report in textproto format")
 	cmd.Flags().BytesHexVar(&teeNonce, "tee", []byte{}, "Define the nonce for the SNP attestation report (must be used with attestation type snp and snp-vtpm)")
 	cmd.Flags().BytesHexVar(&nonce, "vtpm", []byte{}, "Define the nonce for the vTPM attestation report (must be used with attestation type vtpm and snp-vtpm)")
