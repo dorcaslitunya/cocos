@@ -157,12 +157,12 @@ func (sdk *agentSDK) Attestation(ctx context.Context, reportData [size64]byte, n
 }
 
 func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationResultFile *os.File) error {
-	request := &agent.FetchAttestationResultRequest{
+	request := &agent.AttestationResultRequest{
 		TokenNonce: nonce[:],
 		Type:       int32(attType),
 	}
 
-	result, err := sdk.client.FetchAttestationResult(ctx, request)
+	result, err := sdk.client.AttestationResult(ctx, request)
 	if err != nil {
 		return fmt.Errorf("failed to fetch attestation token: %w", err)
 	}

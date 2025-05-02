@@ -30,6 +30,7 @@ import (
 	"github.com/ultravioletrs/cocos/agent/events"
 	agentlogger "github.com/ultravioletrs/cocos/internal/logger"
 	attestationconfig "github.com/ultravioletrs/cocos/pkg/attestation"
+	"github.com/ultravioletrs/cocos/pkg/attestation/azure"
 	"github.com/ultravioletrs/cocos/pkg/attestation/quoteprovider"
 	"github.com/ultravioletrs/cocos/pkg/attestation/quoteprovider/mocks"
 	"github.com/ultravioletrs/cocos/pkg/attestation/vtpm"
@@ -88,6 +89,9 @@ func main() {
 	var qp client.LeveledQuoteProvider
 	vtpmAttest := vtpm.Attest
 	fetchAzureToken := vtpm.FetchAzureAttestation
+
+	vtpm.AzureURL = azure.MaaURL
+	azure.InitializeDefaultMAAVars()
 
 	if !sevGuesDeviceExists() {
 		logger.Info("SEV-SNP device not found")

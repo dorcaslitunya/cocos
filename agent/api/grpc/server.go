@@ -136,13 +136,13 @@ func encodeAttestationResponse(_ context.Context, response interface{}) (interfa
 
 func encodeAttestationResultResponse(_ context.Context, response interface{}) (interface{}, error) {
 	res := response.(fetchAttestationResultRes)
-	return &agent.FetchAttestationResultResponse{
+	return &agent.AttestationResultResponse{
 		File: res.File,
 	}, nil
 }
 
 func decodeAttestationResultRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*agent.FetchAttestationResultRequest)
+	req := grpcReq.(*agent.AttestationResultRequest)
 	var nonce [vtpm.Nonce]byte
 
 	if len(req.TokenNonce) > vtpm.Nonce {
@@ -262,12 +262,12 @@ func (s *grpcServer) Attestation(req *agent.AttestationRequest, stream agent.Age
 	return nil
 }
 
-func (s *grpcServer) FetchAttestationResult(ctx context.Context, req *agent.FetchAttestationResultRequest) (*agent.FetchAttestationResultResponse, error) {
+func (s *grpcServer) FetchAttestationResult(ctx context.Context, req *agent.AttestationResultRequest) (*agent.AttestationResultResponse, error) {
 	_, res, err := s.attestationResult.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	rr, ok := res.(*agent.FetchAttestationResultResponse)
+	rr, ok := res.(*agent.AttestationResultResponse)
 
 	if !ok {
 		return nil, status.Error(codes.Internal, "failed to cast response to FetchAttestationResultResponse")

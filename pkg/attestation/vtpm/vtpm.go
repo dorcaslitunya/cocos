@@ -43,6 +43,7 @@ const (
 var (
 	ExternalTPM   io.ReadWriteCloser
 	ErrNoHashAlgo = errors.New("hash algo is not supported")
+	AzureURL      string
 )
 
 type (
@@ -111,17 +112,12 @@ func Attest(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, erro
 }
 
 func FetchAzureAttestation(tokenNonce []byte) ([]byte, error) {
-	const maaURL = "https://sharedeus.eus.attest.azure.net"
 
 	fmt.Println("Hello, fetching attestation report.")
 
 	fmt.Printf("\nTesting Attest from go-azure\n\n")
 
-	maa.OSBuild = "UVC"
-	maa.OSType = "Linux"
-	maa.OSDistro = "UVC"
-
-	token, err := maa.Attest(context.Background(), tokenNonce, maaURL, http.DefaultClient)
+	token, err := maa.Attest(context.Background(), tokenNonce, AzureURL, http.DefaultClient)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching azure token: %w", err)
 	}
