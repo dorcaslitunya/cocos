@@ -286,6 +286,8 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				return
 			}
 
+			var returnJsonAzureToken bool
+
 			if attType != config.AzureToken {
 				if err := cli.agentSDK.Attestation(cmd.Context(), fixedReportData, fixedVtpmNonceByte, int(attType), attestationFile); err != nil {
 					printError(cmd, "Failed to get attestation due to error: %v ❌ ", err)
@@ -296,6 +298,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 					printError(cmd, "Failed to get attestation result due to error: %v ❌ ", err)
 					return
 				}
+				returnJsonAzureToken = !getAzureTokenJWT
 			}
 
 			if err := attestationFile.Close(); err != nil {
@@ -303,7 +306,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				return
 			}
 
-			if getTextProtoAttestationReport || !getAzureTokenJWT {
+			if getTextProtoAttestationReport || returnJsonAzureToken {
 				result, err := os.ReadFile(filename)
 				if err != nil {
 					printError(cmd, "Error reading attestation file: %v ❌ ", err)
