@@ -653,3 +653,56 @@ func TestRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, roundTripReport)
 }
+
+func TestDecodeJWTToJSON(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []byte
+		err      error
+		validate func(t *testing.T, output []byte)
+	}{
+		{
+			name: "Valid JWT",
+			input: []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+				"eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ." +
+				"SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"),
+			err: nil,
+			validate: func(t *testing.T, output []byte) {
+				assert.NotEmpty(t, output)
+				assert.Contains(t, string(output), `"header"`)
+				assert.Contains(t, string(output), `"payload"`)
+			},
+		},
+		{
+			name:  "Invalid JWT - one part",
+			input: []byte("justonepart"),
+			err:   fmt.Errorf("invalid JWT: must have at least 2 parts"),
+			validate: func(t *testing.T, output []byte) {
+				assert.Nil(t, output)
+			},
+		},
+		{
+			name:  "Invalid Base64",
+			input: []byte("bad@@@.header"),
+			err:   errors.New("illegal base64 data"),
+			validate: func(t *testing.T, output []byte) {
+				assert.Nil(t, output)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := decodeJWTToJSON(tt.input)
+
+			if tt.err != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+
+			tt.validate(t, got)
+		})
+	}
+}

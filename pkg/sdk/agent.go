@@ -161,7 +161,7 @@ func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]b
 		Type:       int32(attType),
 	}
 
-	result, err := sdk.client.AttestationResult(ctx, request)
+	result, err := sdk.client.FetchAttestationResult(ctx, request)
 	if err != nil {
 		return errors.Wrap(errors.New("failed to fetch attestation token"), err)
 	}
