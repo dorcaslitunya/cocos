@@ -11,7 +11,6 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"os"
 	"strconv"
 
@@ -164,12 +163,12 @@ func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]b
 
 	result, err := sdk.client.AttestationResult(ctx, request)
 	if err != nil {
-		return fmt.Errorf("failed to fetch attestation token: %w", err)
+		return errors.Wrap(errors.New("failed to fetch attestation token"), err)
 	}
 
 	_, err = attestationResultFile.Write(result.GetFile())
 	if err != nil {
-		return fmt.Errorf("failed to write attestation result to file: %w", err)
+		return errors.Wrap(errors.New("failed to write attestation result to file"), err)
 	}
 
 	return nil

@@ -288,17 +288,19 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 
 			var returnJsonAzureToken bool
 
-			if attType != config.AzureToken {
-				if err := cli.agentSDK.Attestation(cmd.Context(), fixedReportData, fixedVtpmNonceByte, int(attType), attestationFile); err != nil {
-					printError(cmd, "Failed to get attestation due to error: %v ❌ ", err)
-					return
-				}
-			} else if attType == config.AzureToken {
-				if err := cli.agentSDK.FetchAttestationResult(cmd.Context(), fixedVtpmNonceByte, int(attType), attestationFile); err != nil {
-					printError(cmd, "Failed to get attestation result due to error: %v ❌ ", err)
+			if attType == config.AzureToken {
+				err := cli.agentSDK.FetchAttestationResult(cmd.Context(), fixedVtpmNonceByte, int(attType), attestationFile)
+				if err != nil {
+					printError(cmd, "Failed to get attestation result due to error: %v ❌", err)
 					return
 				}
 				returnJsonAzureToken = !getAzureTokenJWT
+			} else {
+				err := cli.agentSDK.Attestation(cmd.Context(), fixedReportData, fixedVtpmNonceByte, int(attType), attestationFile)
+				if err != nil {
+					printError(cmd, "Failed to get attestation due to error: %v ❌", err)
+					return
+				}
 			}
 
 			if err := attestationFile.Close(); err != nil {
@@ -316,6 +318,11 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 				switch attestationType {
 				case SNP:
 					result, err = attesationToJSON(result)
+					if err != nil {
+						printError(cmd, "Error converting SNP attestation to JSON: %v ❌", err)
+						return
+					}
+
 				case VTPM, SNPvTPM:
 					marshalOptions := prototext.MarshalOptions{
 						Multiline: true,
@@ -324,17 +331,17 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 					var attvTPM tpmAttest.Attestation
 					err = proto.Unmarshal(result, &attvTPM)
 					if err != nil {
-						printError(cmd, "failed to unmarshal the attestation report: %v ❌ ", ErrBadAttestation)
+						printError(cmd, "Failed to unmarshal the attestation report: %v ❌", err)
+						return
 					}
-
 					result = []byte(marshalOptions.Format(&attvTPM))
+
 				case AzureToken:
 					result, err = decodeJWTToJSON(result)
-				}
-
-				if err != nil {
-					printError(cmd, "Error converting attestation to textproto: %v ❌ ", err)
-					return
+					if err != nil {
+						printError(cmd, "Error decoding Azure token: %v ❌", err)
+						return
+					}
 				}
 
 				if err := os.WriteFile(filename, result, 0o644); err != nil {

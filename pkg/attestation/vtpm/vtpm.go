@@ -112,17 +112,10 @@ func Attest(teeNonce []byte, vTPMNonce []byte, teeAttestaion bool) ([]byte, erro
 }
 
 func FetchAzureAttestation(tokenNonce []byte) ([]byte, error) {
-	fmt.Println("Hello, fetching attestation report.")
-
-	fmt.Printf("\nTesting Attest from go-azure\n\n")
-
 	token, err := maa.Attest(context.Background(), tokenNonce, AzureURL, http.DefaultClient)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching azure token: %w", err)
 	}
-
-	fmt.Printf("Token: %s\n", token)
-
 	return []byte(token), nil
 }
 

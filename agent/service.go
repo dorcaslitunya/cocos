@@ -100,6 +100,8 @@ var (
 	ErrAllResultsConsumed = errors.New("all results have been consumed by declared consumers")
 	// ErrAttestationFailed attestation failed.
 	ErrAttestationFailed = errors.New("failed to get raw quote")
+	// ErrFetchAzureToken azure token fetch failed.
+	ErrFetchAzureToken = errors.New("failed to get azure token")
 	// ErrAttType indicates that the attestation type that is requested does not exist or is not supported.
 	ErrAttestationType = errors.New("attestation type does not exist or is not supported")
 )

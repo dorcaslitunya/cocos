@@ -88,10 +88,10 @@ func main() {
 
 	var qp client.LeveledQuoteProvider
 	vtpmAttest := vtpm.Attest
-	fetchAzureToken := vtpm.FetchAzureAttestation
 
-	vtpm.AzureURL = azure.MaaURL
-	azure.InitializeDefaultMAAVars()
+	azureConfig := azure.NewEnvConfig()
+	azure.InitializeDefaultMAAVars(azureConfig)
+	vtpm.AzureURL = azureConfig.MaaURL
 
 	if !sevGuesDeviceExists() {
 		logger.Info("SEV-SNP device not found")
@@ -146,7 +146,7 @@ func main() {
 		return
 	}
 
-	svc := newService(ctx, logger, eventSvc, qp, cfg.Vmpl, vtpmAttest, fetchAzureToken)
+	svc := newService(ctx, logger, eventSvc, qp, cfg.Vmpl, vtpmAttest, vtpm.FetchAzureAttestation)
 
 	if err := os.MkdirAll(storageDir, 0o755); err != nil {
 		logger.Error(fmt.Sprintf("failed to create storage directory: %s", err))
@@ -202,7 +202,7 @@ func main() {
 }
 
 func newService(ctx context.Context, logger *slog.Logger, eventSvc events.Service, qp client.LeveledQuoteProvider, vmpl int, vtpmAttest vtpm.VtpmAttest, fetchAzureToken vtpm.AzureAttestFunc) agent.Service {
-	svc := agent.New(ctx, logger, eventSvc, qp, vmpl, vtpmAttest, fetchAzureToken)
+	svc := agent.New(ctx, logger, eventSvc, qp, vmpl, vtpmAttest, vtpm.FetchAzureAttestation)
 
 	svc = api.LoggingMiddleware(svc, logger)
 	counter, latency := prometheus.MakeMetrics(svcName, "api")

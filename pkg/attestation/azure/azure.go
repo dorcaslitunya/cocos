@@ -7,27 +7,36 @@ import (
 	"github.com/edgelesssys/go-azguestattestation/maa"
 )
 
-var (
-	OSBuild  = "UVC"
-	OSType   = "Linux"
-	OSDistro = "UVC"
-	MaaURL   = "https://sharedeus.eus.attest.azure.net"
-)
-
-func InitializeDefaultMAAVars() {
-	maa.OSBuild = OSBuild
-	maa.OSType = OSType
-	maa.OSDistro = OSDistro
+type EnvConfig struct {
+	OSBuild  string
+	OSType   string
+	OSDistro string
+	MaaURL   string
 }
 
-func InitializeOSVars(build, osType, osDistro string) {
+func NewEnvConfig() *EnvConfig {
+	return &EnvConfig{
+		OSBuild:  "UVC",
+		OSType:   "Linux",
+		OSDistro: "UVC",
+		MaaURL:   "https://sharedeus.eus.attest.azure.net",
+	}
+}
+
+func InitializeDefaultMAAVars(config *EnvConfig) {
+	maa.OSBuild = config.OSBuild
+	maa.OSType = config.OSType
+	maa.OSDistro = config.OSDistro
+}
+
+func (c *EnvConfig) InitializeOSVars(build, osType, osDistro string) {
 	if build != "" {
-		OSBuild = build
+		c.OSBuild = build
 	}
 	if osType != "" {
-		OSType = osType
+		c.OSType = osType
 	}
 	if osDistro != "" {
-		OSDistro = osDistro
+		c.OSDistro = osDistro
 	}
 }

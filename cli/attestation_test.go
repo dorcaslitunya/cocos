@@ -49,6 +49,7 @@ func TestNewGetAttestationCmd(t *testing.T) {
 
 	teeNonce := hex.EncodeToString(bytes.Repeat([]byte{0x00}, quoteprovider.Nonce))
 	vtpmNonce := hex.EncodeToString(bytes.Repeat([]byte{0x00}, vtpm.Nonce))
+	tokenNonce := hex.EncodeToString(bytes.Repeat([]byte{0x00}, vtpm.Nonce))
 
 	testCases := []struct {
 		name         string
@@ -126,7 +127,7 @@ func TestNewGetAttestationCmd(t *testing.T) {
 			args:         []string{"snp", "--tee", teeNonce, "--reporttextproto"},
 			mockResponse: []byte("mock attestation"),
 			mockError:    nil,
-			expectedErr:  "Error converting attestation to textproto",
+			expectedErr:  "Fetching SEV-SNP attestation report\nError converting SNP attestation to JSON: attestation contents too small : attestation contents too small (0x10 bytes). Want at least 0x4a0 bytes ❌\n",
 		},
 		{
 			name:         "successful Textproto report",
@@ -141,6 +142,27 @@ func TestNewGetAttestationCmd(t *testing.T) {
 			mockResponse: nil,
 			mockError:    errors.New("failed to connect to agent"),
 			expectedErr:  "Failed to connect to agent",
+		},
+		{
+			name:         "successful Azure token retrieval",
+			args:         []string{"azure-token", "--token", tokenNonce},
+			mockResponse: []byte("eyJhbGciOiAiUlMyNTYifQ.eyJzdWIiOiAidGVzdC11c2VyIn0.signature"),
+			mockError:    nil,
+			expectedOut:  "Fetching Azure token\nAttestation result retrieved and saved successfully!\n",
+		},
+		{
+			name:         "failed to retrieve Azure token",
+			args:         []string{"azure-token", "--token", tokenNonce},
+			mockResponse: nil,
+			mockError:    errors.New("error"),
+			expectedErr:  "Fetching Azure token\nFailed to get attestation result due to error: error ❌\n",
+		},
+		{
+			name:         "invalid token nonce size",
+			args:         []string{"azure-token", "--token", hex.EncodeToString(bytes.Repeat([]byte{0x00}, 33))},
+			mockResponse: nil,
+			mockError:    errors.New("error"),
+			expectedErr:  "Fetching Azure token\nvTPM nonce must be a hex encoded string of length lesser or equal 32 bytes ❌ \n",
 		},
 	}
 
@@ -161,6 +183,11 @@ func TestNewGetAttestationCmd(t *testing.T) {
 
 			mockSDK.On("Attestation", mock.Anything, [quoteprovider.Nonce]byte(bytes.Repeat([]byte{0x00}, quoteprovider.Nonce)), [vtpm.Nonce]byte(bytes.Repeat([]byte{0x00}, vtpm.Nonce)), mock.Anything, mock.Anything).Return(tc.mockError).Run(func(args mock.Arguments) {
 				_, err := args.Get(4).(*os.File).Write(tc.mockResponse)
+				require.NoError(t, err)
+			})
+
+			mockSDK.On("FetchAttestationResult", mock.Anything, [vtpm.Nonce]byte(bytes.Repeat([]byte{0x00}, vtpm.Nonce)), mock.Anything, mock.Anything).Return(tc.mockError).Run(func(args mock.Arguments) {
+				_, err := args.Get(3).(*os.File).Write(tc.mockResponse)
 				require.NoError(t, err)
 			})
 
