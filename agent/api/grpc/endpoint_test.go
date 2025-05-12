@@ -200,7 +200,7 @@ func TestAttestationResultEndpoint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Only call service mock if validation is expected to pass
 			if err := tt.req.validate(); err == nil {
-				svc.On("FetchAttestationResult", mock.Anything, tt.req.tokenNonce, config.AttestationType(tt.req.AttType)).
+				svc.On("AttestationResult", mock.Anything, tt.req.tokenNonce, config.AttestationType(tt.req.AttType)).
 					Return([]byte("mock file"), tt.mockErr).Once()
 			}
 

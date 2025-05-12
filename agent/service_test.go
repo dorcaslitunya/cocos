@@ -421,7 +421,7 @@ func TestAttestationResult(t *testing.T) {
 				return tc.token, nil
 			})
 
-			result, err := svc.FetchAttestationResult(ctx, tc.nonce, tc.attType)
+			result, err := svc.AttestationResult(ctx, tc.nonce, tc.attType)
 			assert.True(t, errors.Contains(err, tc.err), "expected error %v, got %v", tc.err, err)
 			assert.Equal(t, tc.token, result)
 		})

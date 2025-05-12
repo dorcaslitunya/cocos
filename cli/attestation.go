@@ -289,7 +289,7 @@ func (cli *CLI) NewGetAttestationCmd() *cobra.Command {
 			var returnJsonAzureToken bool
 
 			if attType == config.AzureToken {
-				err := cli.agentSDK.FetchAttestationResult(cmd.Context(), fixedVtpmNonceByte, int(attType), attestationFile)
+				err := cli.agentSDK.AttestationResult(cmd.Context(), fixedVtpmNonceByte, int(attType), attestationFile)
 				if err != nil {
 					printError(cmd, "Failed to get attestation result due to error: %v ❌", err)
 					return

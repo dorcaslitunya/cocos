@@ -27,7 +27,7 @@ type SDK interface {
 	Data(ctx context.Context, dataset *os.File, filename string, privKey any) error
 	Result(ctx context.Context, privKey any, resultFile *os.File) error
 	Attestation(ctx context.Context, reportData [size64]byte, nonce [size32]byte, attType int, attestationFile *os.File) error
-	FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationFile *os.File) error
+	AttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationFile *os.File) error
 }
 
 const (
@@ -155,13 +155,13 @@ func (sdk *agentSDK) Attestation(ctx context.Context, reportData [size64]byte, n
 	return pb.ReceiveAttestation(attestationProgressDescription, fileSize, stream, attestationFile)
 }
 
-func (sdk *agentSDK) FetchAttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationResultFile *os.File) error {
+func (sdk *agentSDK) AttestationResult(ctx context.Context, nonce [size32]byte, attType int, attestationResultFile *os.File) error {
 	request := &agent.AttestationResultRequest{
 		TokenNonce: nonce[:],
 		Type:       int32(attType),
 	}
 
-	result, err := sdk.client.FetchAttestationResult(ctx, request)
+	result, err := sdk.client.AttestationResult(ctx, request)
 	if err != nil {
 		return errors.Wrap(errors.New("failed to fetch attestation token"), err)
 	}

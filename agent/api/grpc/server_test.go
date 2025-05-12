@@ -171,9 +171,9 @@ func TestAttestationResult(t *testing.T) {
 
 	vtpmNonce := [vtpm.Nonce]byte{}
 	attestationType := config.SNP
-	mockService.On("FetchAttestationResult", mock.Anything, vtpmNonce, attestationType).Return([]byte("attestation data"), nil)
+	mockService.On("AttestationResult", mock.Anything, vtpmNonce, attestationType).Return([]byte("attestation data"), nil)
 
-	resp, err := server.FetchAttestationResult(context.Background(), &agent.AttestationResultRequest{TokenNonce: vtpmNonce[:]})
+	resp, err := server.AttestationResult(context.Background(), &agent.AttestationResultRequest{TokenNonce: vtpmNonce[:]})
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("attestation data"), resp.File)
 

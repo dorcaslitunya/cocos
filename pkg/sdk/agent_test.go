@@ -524,7 +524,7 @@ func TestAttestationResult(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			svcCall := svc.On("FetchAttestationResult", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tc.svcRes, tc.err)
+			svcCall := svc.On("AttestationResult", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tc.svcRes, tc.err)
 
 			file, err := os.CreateTemp("", "attestation")
 			require.NoError(t, err)
@@ -533,7 +533,7 @@ func TestAttestationResult(t *testing.T) {
 				os.Remove(file.Name())
 			})
 
-			err = sdk.FetchAttestationResult(context.Background(), tc.nonce, 0, file)
+			err = sdk.AttestationResult(context.Background(), tc.nonce, 0, file)
 
 			require.NoError(t, file.Close())
 

@@ -186,7 +186,7 @@ func TestNewGetAttestationCmd(t *testing.T) {
 				require.NoError(t, err)
 			})
 
-			mockSDK.On("FetchAttestationResult", mock.Anything, [vtpm.Nonce]byte(bytes.Repeat([]byte{0x00}, vtpm.Nonce)), mock.Anything, mock.Anything).Return(tc.mockError).Run(func(args mock.Arguments) {
+			mockSDK.On("AttestationResult", mock.Anything, [vtpm.Nonce]byte(bytes.Repeat([]byte{0x00}, vtpm.Nonce)), mock.Anything, mock.Anything).Return(tc.mockError).Run(func(args mock.Arguments) {
 				_, err := args.Get(3).(*os.File).Write(tc.mockResponse)
 				require.NoError(t, err)
 			})
