@@ -22,11 +22,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentService_Algo_FullMethodName              = "/agent.AgentService/Algo"
-	AgentService_Data_FullMethodName              = "/agent.AgentService/Data"
-	AgentService_Result_FullMethodName            = "/agent.AgentService/Result"
-	AgentService_Attestation_FullMethodName       = "/agent.AgentService/Attestation"
+	AgentService_Algo_FullMethodName                  = "/agent.AgentService/Algo"
+	AgentService_Data_FullMethodName                  = "/agent.AgentService/Data"
+	AgentService_Result_FullMethodName                = "/agent.AgentService/Result"
+	AgentService_Attestation_FullMethodName           = "/agent.AgentService/Attestation"
 	AgentService_AttestationResult_FullMethodName = "/agent.AgentService/AttestationResult"
+	AgentService_IMAMeasurements_FullMethodName = "/agent.AgentService/IMAMeasurements"
 )
 
 // AgentServiceClient is the client API for AgentService service.
@@ -38,6 +39,7 @@ type AgentServiceClient interface {
 	Result(ctx context.Context, in *ResultRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ResultResponse], error)
 	Attestation(ctx context.Context, in *AttestationRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AttestationResponse], error)
 	AttestationResult(ctx context.Context, in *AttestationResultRequest, opts ...grpc.CallOption) (*AttestationResultResponse, error)
+	IMAMeasurements(ctx context.Context, in *IMAMeasurementsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[IMAMeasurementsResponse], error)
 }
 
 type agentServiceClient struct {
@@ -122,6 +124,25 @@ func (c *agentServiceClient) AttestationResult(ctx context.Context, in *Attestat
 	return out, nil
 }
 
+func (c *agentServiceClient) IMAMeasurements(ctx context.Context, in *IMAMeasurementsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[IMAMeasurementsResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[4], AgentService_IMAMeasurements_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[IMAMeasurementsRequest, IMAMeasurementsResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AgentService_IMAMeasurementsClient = grpc.ServerStreamingClient[IMAMeasurementsResponse]
+
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility.
@@ -131,6 +152,7 @@ type AgentServiceServer interface {
 	Result(*ResultRequest, grpc.ServerStreamingServer[ResultResponse]) error
 	Attestation(*AttestationRequest, grpc.ServerStreamingServer[AttestationResponse]) error
 	AttestationResult(context.Context, *AttestationResultRequest) (*AttestationResultResponse, error)
+	IMAMeasurements(*IMAMeasurementsRequest, grpc.ServerStreamingServer[IMAMeasurementsResponse]) error
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -155,6 +177,9 @@ func (UnimplementedAgentServiceServer) Attestation(*AttestationRequest, grpc.Ser
 }
 func (UnimplementedAgentServiceServer) AttestationResult(context.Context, *AttestationResultRequest) (*AttestationResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AttestationResult not implemented")
+}
+func (UnimplementedAgentServiceServer) IMAMeasurements(*IMAMeasurementsRequest, grpc.ServerStreamingServer[IMAMeasurementsResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method IMAMeasurements not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 func (UnimplementedAgentServiceServer) testEmbeddedByValue()                      {}
@@ -231,6 +256,17 @@ func _AgentService_AttestationResult_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentService_IMAMeasurements_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(IMAMeasurementsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AgentServiceServer).IMAMeasurements(m, &grpc.GenericServerStream[IMAMeasurementsRequest, IMAMeasurementsResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AgentService_IMAMeasurementsServer = grpc.ServerStreamingServer[IMAMeasurementsResponse]
+
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -262,6 +298,11 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Attestation",
 			Handler:       _AgentService_Attestation_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "IMAMeasurements",
+			Handler:       _AgentService_IMAMeasurements_Handler,
 			ServerStreams: true,
 		},
 	},

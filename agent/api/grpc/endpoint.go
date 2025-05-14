@@ -93,3 +93,19 @@ func attestationResultEndpoint(svc agent.Service) endpoint.Endpoint {
 		return fetchAttestationResultRes{File: file}, nil
 	}
 }
+
+func imaMeasurementsEndpoint(svc agent.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(imaMeasurementsReq)
+
+		if err := req.validate(); err != nil {
+			return imaMeasurementsRes{}, err
+		}
+		file, pcr10, err := svc.IMAMeasurements(ctx)
+		if err != nil {
+			return imaMeasurementsRes{}, err
+		}
+
+		return imaMeasurementsRes{File: file, PCR10: pcr10}, nil
+	}
+}

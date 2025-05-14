@@ -68,3 +68,10 @@ func validateAttestationType(attType config.AttestationType) error {
 		return errors.New("invalid attestation type")
 	}
 }
+
+type imaMeasurementsReq struct{}
+
+func (req imaMeasurementsReq) validate() error {
+	// No request parameters to validate, so no validation logic needed
+	return nil
+}

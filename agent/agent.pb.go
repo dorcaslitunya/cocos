@@ -480,6 +480,94 @@ func (x *AttestationResultResponse) GetFile() []byte {
 	return nil
 }
 
+type IMAMeasurementsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IMAMeasurementsRequest) Reset() {
+	*x = IMAMeasurementsRequest{}
+	mi := &file_agent_agent_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IMAMeasurementsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IMAMeasurementsRequest) ProtoMessage() {}
+
+func (x *IMAMeasurementsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IMAMeasurementsRequest.ProtoReflect.Descriptor instead.
+func (*IMAMeasurementsRequest) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{8}
+}
+
+type IMAMeasurementsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	File          []byte                 `protobuf:"bytes,1,opt,name=file,proto3" json:"file,omitempty"`
+	Pcr10         []byte                 `protobuf:"bytes,2,opt,name=pcr10,proto3" json:"pcr10,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IMAMeasurementsResponse) Reset() {
+	*x = IMAMeasurementsResponse{}
+	mi := &file_agent_agent_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IMAMeasurementsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IMAMeasurementsResponse) ProtoMessage() {}
+
+func (x *IMAMeasurementsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IMAMeasurementsResponse.ProtoReflect.Descriptor instead.
+func (*IMAMeasurementsResponse) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *IMAMeasurementsResponse) GetFile() []byte {
+	if x != nil {
+		return x.File
+	}
+	return nil
+}
+
+func (x *IMAMeasurementsResponse) GetPcr10() []byte {
+	if x != nil {
+		return x.Pcr10
+	}
+	return nil
+}
+
 var File_agent_agent_proto protoreflect.FileDescriptor
 
 var file_agent_agent_proto_rawDesc = string([]byte{
@@ -556,16 +644,18 @@ func file_agent_agent_proto_rawDescGZIP() []byte {
 
 var file_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_agent_agent_proto_goTypes = []any{
-	(*AlgoRequest)(nil),               // 0: agent.AlgoRequest
-	(*AlgoResponse)(nil),              // 1: agent.AlgoResponse
-	(*DataRequest)(nil),               // 2: agent.DataRequest
-	(*DataResponse)(nil),              // 3: agent.DataResponse
-	(*ResultRequest)(nil),             // 4: agent.ResultRequest
-	(*ResultResponse)(nil),            // 5: agent.ResultResponse
-	(*AttestationRequest)(nil),        // 6: agent.AttestationRequest
-	(*AttestationResponse)(nil),       // 7: agent.AttestationResponse
+	(*AlgoRequest)(nil),                   // 0: agent.AlgoRequest
+	(*AlgoResponse)(nil),                  // 1: agent.AlgoResponse
+	(*DataRequest)(nil),                   // 2: agent.DataRequest
+	(*DataResponse)(nil),                  // 3: agent.DataResponse
+	(*ResultRequest)(nil),                 // 4: agent.ResultRequest
+	(*ResultResponse)(nil),                // 5: agent.ResultResponse
+	(*AttestationRequest)(nil),            // 6: agent.AttestationRequest
+	(*AttestationResponse)(nil),           // 7: agent.AttestationResponse
 	(*AttestationResultRequest)(nil),  // 8: agent.AttestationResultRequest
 	(*AttestationResultResponse)(nil), // 9: agent.AttestationResultResponse
+	(*IMAMeasurementsRequest)(nil),  // 8: agent.IMAMeasurementsRequest
+	(*IMAMeasurementsResponse)(nil), // 9: agent.IMAMeasurementsResponse
 }
 var file_agent_agent_proto_depIdxs = []int32{
 	0, // 0: agent.AgentService.Algo:input_type -> agent.AlgoRequest

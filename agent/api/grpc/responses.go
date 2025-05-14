@@ -17,3 +17,8 @@ type attestationRes struct {
 type fetchAttestationResultRes struct {
 	File []byte `protobuf:"bytes,1,opt,name=AttestationResult,proto3" json:"AttestationResult,omitempty"`
 }
+
+type imaMeasurementsRes struct {
+	File  []byte
+	PCR10 []byte
+}
