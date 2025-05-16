@@ -187,7 +187,7 @@ func main() {
 		return
 	}
 
-	azureAttestationResult, certSerialNumber, err := azureAttestationFromCert(ctx, cvmGrpcConfig.ClientCert, svc)
+	azureAttestationResult, azureCertSerialNumber, err := azureAttestationFromCert(ctx, cvmGrpcConfig.ClientCert, svc)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get attestation: %s", err))
 		exitCode = 1
@@ -207,7 +207,7 @@ func main() {
 		Message: &cvms.ClientStreamMessage_AzureAttestationResult{
 			AzureAttestationResult: &cvms.AzureAttestationResponse{
 				File:             azureAttestationResult,
-				CertSerialNumber: certSerialNumber,
+				CertSerialNumber: azureCertSerialNumber,
 			},
 		},
 	}
