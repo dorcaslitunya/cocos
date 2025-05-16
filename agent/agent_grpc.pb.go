@@ -22,11 +22,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentService_Algo_FullMethodName                  = "/agent.AgentService/Algo"
-	AgentService_Data_FullMethodName                  = "/agent.AgentService/Data"
-	AgentService_Result_FullMethodName                = "/agent.AgentService/Result"
-	AgentService_Attestation_FullMethodName           = "/agent.AgentService/Attestation"
-	AgentService_IMAMeasurements_FullMethodName = "/agent.AgentService/IMAMeasurements"
+	AgentService_Algo_FullMethodName              = "/agent.AgentService/Algo"
+	AgentService_Data_FullMethodName              = "/agent.AgentService/Data"
+	AgentService_Result_FullMethodName            = "/agent.AgentService/Result"
+	AgentService_Attestation_FullMethodName       = "/agent.AgentService/Attestation"
+	AgentService_IMAMeasurements_FullMethodName   = "/agent.AgentService/IMAMeasurements"
 	AgentService_AttestationResult_FullMethodName = "/agent.AgentService/AttestationResult"
 )
 
@@ -144,7 +144,7 @@ func (c *agentServiceClient) FetchIMAMeasurements(ctx context.Context, in *IMAMe
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AgentService_IMAMeasurementsClient = grpc.ServerStreamingClient[IMAMeasurementsResponse]
 
-func (c *agentServiceClient) FetchAttestationResult(ctx context.Context, in *FetchAttestationResultRequest, opts ...grpc.CallOption) (*FetchAttestationResultResponse, error) {
+func (c *agentServiceClient) AttestationResult(ctx context.Context, in *AttestationResultRequest, opts ...grpc.CallOption) (*AttestationResultResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AttestationResultResponse)
 	err := c.cc.Invoke(ctx, AgentService_AttestationResult_FullMethodName, in, out, cOpts...)
@@ -283,7 +283,7 @@ func _AgentService_FetchIMAMeasurements_Handler(srv interface{}, stream grpc.Ser
 type AgentService_IMAMeasurementsServer = grpc.ServerStreamingServer[IMAMeasurementsResponse]
 
 func _AgentService_AttestationResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FetchAttestationResultRequest)
+	in := new(AttestationResultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}

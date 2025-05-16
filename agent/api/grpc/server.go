@@ -341,7 +341,7 @@ func (s *grpcServer) IMAMeasurements(req *agent.IMAMeasurementsRequest, stream a
 	return nil
 }
 
-func (s *grpcServer) FetchAttestationResult(ctx context.Context, req *agent.FetchAttestationResultRequest) (*agent.FetchAttestationResultResponse, error) {
+func (s *grpcServer) AttestationResult(ctx context.Context, req *agent.AttestationResultRequest) (*agent.AttestationResultResponse, error) {
 	_, res, err := s.attestationResult.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err

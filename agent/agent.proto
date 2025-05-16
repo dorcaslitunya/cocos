@@ -64,7 +64,7 @@ message IMAMeasurementsResponse {
   bytes pcr10 = 2;
 }
 
-message FetchAttestationResultRequest{
+message AttestationResultRequest{
   bytes tokenNonce = 1; // Should be less or equal 32 bytes
   int32 type = 3;
 }
