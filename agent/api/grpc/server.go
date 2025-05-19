@@ -12,7 +12,7 @@ import (
 
 	"github.com/go-kit/kit/transport/grpc"
 	"github.com/ultravioletrs/cocos/agent"
-	config "github.com/ultravioletrs/cocos/pkg/attestation"
+	"github.com/ultravioletrs/cocos/pkg/attestation"
 	"github.com/ultravioletrs/cocos/pkg/attestation/quoteprovider"
 	"github.com/ultravioletrs/cocos/pkg/attestation/vtpm"
 	"google.golang.org/grpc/codes"
@@ -131,7 +131,7 @@ func decodeAttestationRequest(_ context.Context, grpcReq interface{}) (interface
 
 	copy(reportData[:], req.TeeNonce)
 	copy(nonce[:], req.VtpmNonce)
-	return attestationReq{TeeNonce: reportData, VtpmNonce: nonce, AttType: config.AttestationType(req.Type)}, nil
+	return attestationReq{TeeNonce: reportData, VtpmNonce: nonce, AttType: attestation.PlatformType(req.Type)}, nil
 }
 
 func encodeAttestationResponse(_ context.Context, response interface{}) (interface{}, error) {
@@ -157,7 +157,7 @@ func decodeAttestationResultRequest(_ context.Context, grpcReq interface{}) (int
 	}
 
 	copy(nonce[:], req.TokenNonce)
-	return FetchAttestationResultReq{tokenNonce: nonce, AttType: config.AttestationType(req.Type)}, nil
+	return FetchAttestationResultReq{tokenNonce: nonce, AttType: attestation.PlatformType(req.Type)}, nil
 }
 
 // Algo implements agent.AgentServiceServer.
